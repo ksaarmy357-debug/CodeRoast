@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  <title>CodeRoast 🔥</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg-color: #050505;
+      --surface: rgba(26, 26, 26, 0.6);
+      --surface2: rgba(40, 40, 40, 0.8);
+      --border: rgba(255, 255, 255, 0.1);
+      --text: #ffffff;
+      --muted: #a0a0a0;
+      --accent: #ff4d00;
+      --accent-glow: rgba(255, 77, 0, 0.5);
+      --green: #22c55e;
+      --yellow: #eab308;
+      --red: #ef4444;
+      --mono: 'JetBrains Mono', 'Fira Code', monospace;
+      --sans: 'Inter', system-ui, sans-serif;
+      --radius: 20px;
+    }
+    
+    body {
+      font-family: var(--sans);
+      background-color: var(--bg-color);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Animated background orbs for depth */
+    body::before, body::after {
+      content: '';
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(100px);
+      z-index: -1;
+      opacity: 0.5;
+      animation: float 10s infinite alternate ease-in-out;
+    }
+    body::before {
+      width: 400px; height: 400px;
+      background: rgba(255, 77, 0, 0.2);
+      top: -10%; left: -10%;
+    }
+    body::after {
+      width: 500px; height: 500px;
+      background: rgba(138, 43, 226, 0.15);
+      bottom: -20%; right: -10%;
+      animation-delay: -5s;
+    }
+
+    @keyframes float {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(30px, 50px) scale(1.1); }
+    }
+
+    header {
+      padding: 3rem 1.5rem 1.5rem;
+      text-align: center;
+      position: relative;
+      perspective: 1000px;
+    }
+    
+    header h1 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      letter-spacing: -2px;
+      background: linear-gradient(135deg, #ff4d00, #ffaa00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 4px 8px var(--accent-glow));
+      animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      transform-style: preserve-3d;
+      transform: translateZ(20px);
+    }
+
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.8) translateZ(-50px) rotateX(20deg); }
+      100% { opacity: 1; transform: scale(1) translateZ(20px) rotateX(0deg); }
+    }
+
+    header p {
+      color: var(--muted);
+      margin-top: 0.5rem;
+      font-size: 1.1rem;
+      font-weight: 500;
+      animation: fadeIn 1s 0.3s forwards;
+      opacity: 0;
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    main {
+      flex: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 1rem 1.5rem 4rem;
+      position: relative;
+      z-index: 10;
+    }
+
+    .examples {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+      align-items: center;
+      justify-content: center;
+    }
+    .examples span {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .chip {
+      font-size: 13px;
+      padding: 6px 16px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(10px);
+      color: var(--text);
+      cursor: pointer;
+      font-family: var(--sans);
+      font-weight: 600;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .chip:hover { 
+      border-color: var(--accent); 
+      color: var(--accent); 
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px var(--accent-glow);
+      background: rgba(255, 77, 0, 0.1);
+    }
+
+    .editor-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 2rem;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      transition: transform 0.3s, box-shadow 0.3s;
+      transform: translateZ(0);
+    }
+    .editor-card:hover {
+      box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 20px rgba(255, 77, 0, 0.1);
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,0.3);
+    }
+    
+    select {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: var(--sans);
+      outline: none;
+      transition: all 0.2s;
+    }
+    select:focus, select:hover {
+      border-color: var(--accent);
+      background: rgba(255,255,255,0.1);
+    }
+    select option { background: #1a1a1a; color: white; }
+
+    .char-count { font-size: 12px; color: var(--muted); font-weight: 600; font-family: var(--mono); }
+    
+    textarea {
+      width: 100%;
+      height: 300px;
+      padding: 20px;
+      font-family: var(--mono);
+      font-size: 14px;
+      border: none;
+      resize: vertical;
+      background: transparent;
+      color: var(--text);
+      outline: none;
+      line-height: 1.6;
+      transition: background 0.3s;
+    }
+    textarea:focus { background: rgba(0,0,0,0.2); }
+    textarea::placeholder { color: #555; }
+
+    .roast-btn {
+      width: 100%;
+      padding: 18px;
+      font-size: 18px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-radius: 16px;
+      border: none;
+      background: linear-gradient(135deg, #ff4d00, #ff2a00);
+      color: white;
+      cursor: pointer;
+      font-family: var(--sans);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      box-shadow: 0 8px 0 #cc3d00, 0 15px 20px rgba(255, 77, 0, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+    .roast-btn::after {
+      content: '';
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: linear-gradient(transparent, rgba(255,255,255,0.2), transparent);
+      transform: rotate(45deg) translateY(-100%);
+      transition: transform 0.6s;
+    }
+    .roast-btn:hover::after { transform: rotate(45deg) translateY(100%); }
+    
+    .roast-btn:hover { 
+      transform: translateY(-2px); 
+      box-shadow: 0 10px 0 #cc3d00, 0 20px 25px rgba(255, 77, 0, 0.5);
+    }
+    .roast-btn:active { 
+      transform: translateY(8px); 
+      box-shadow: 0 0px 0 #cc3d00, 0 5px 10px rgba(255, 77, 0, 0.3);
+    }
+    .roast-btn:disabled { 
+      opacity: 0.6; 
+      cursor: not-allowed; 
+      transform: translateY(8px);
+      box-shadow: none;
+      background: #555;
+    }
+
+    .result-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-top: 2rem;
+      display: none;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      transform-origin: top;
+    }
+    
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .result-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .result-header span { font-size: 14px; font-weight: 700; color: #fff; text-transform: uppercase; letter-spacing: 1px;}
+    
+    .score-badge {
+      margin-left: auto;
+      font-size: 14px;
+      padding: 4px 12px;
+      border-radius: 8px;
+      font-weight: 800;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
+    }
+    .score-bad { background: rgba(239, 68, 68, 0.2); color: var(--red); box-shadow: 0 0 10px rgba(239, 68, 68, 0.3); }
+    .score-mid { background: rgba(234, 179, 8, 0.2); color: var(--yellow); box-shadow: 0 0 10px rgba(234, 179, 8, 0.3); }
+    .score-good { background: rgba(34, 197, 94, 0.2); color: var(--green); box-shadow: 0 0 10px rgba(34, 197, 94, 0.3); }
+
+    .result-body {
+      padding: 24px;
+      font-size: 15px;
+      line-height: 1.8;
+      color: #e0e0e0;
+      white-space: pre-wrap;
+      font-family: var(--sans);
+    }
+    
+    /* Highlight special roast sections */
+    .result-body b, .result-body strong { color: var(--accent); }
+
+    .loading-dots {
+      display: flex;
+      gap: 8px;
+      padding: 40px;
+      align-items: center;
+      justify-content: center;
+    }
+    .dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent-glow);
+      animation: bounce 1.2s infinite cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0) scale(0.8); opacity: 0.5; }
+      50% { transform: translateY(-15px) scale(1.2); opacity: 1; }
+    }
+
+    .action-row {
+      display: flex;
+      gap: 12px;
+      padding: 0 24px 24px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .action-btn {
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      cursor: pointer;
+      font-family: var(--sans);
+      transition: all 0.2s;
+    }
+    .action-btn:hover { 
+      border-color: var(--text);
+      background: rgba(255,255,255,0.1);
+      transform: translateY(-2px);
+    }
+
+    .api-notice {
+      background: rgba(255, 77, 0, 0.1);
+      border: 1px solid rgba(255, 77, 0, 0.3);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #ffaa88;
+      margin-bottom: 1.5rem;
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      animation: slideDown 0.5s ease-out;
+    }
+    @keyframes slideDown {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .api-notice a { color: var(--accent); font-weight: bold; text-decoration: none; }
+    .api-notice a:hover { text-decoration: underline; }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 13px;
+      color: #666;
+      font-weight: 500;
+    }
+
+    /* Custom Scrollbar for Textarea */
+    textarea::-webkit-scrollbar { width: 8px; }
+    textarea::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 8px; }
+    textarea::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 8px; }
+    textarea::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🔥 CodeRoast</h1>
+  <p>Paste your code. Brace yourself.</p>
+</header>
+
+<main>
+  <div class="api-notice" id="apiNotice">
+    ⚡ You'll be prompted for your OpenRouter API key when you roast. Get one free at <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a>
+    &nbsp; <button class="chip" onclick="localStorage.removeItem('coderoast_api_key'); OPENROUTER_API_KEY=''; alert('Key cleared! You\'ll be prompted again.')" style="font-size:11px;">Change Key</button>
+  </div>
+
+  <div class="examples">
+    <span>Try:</span>
+    <button class="chip" onclick="loadExample('python')">Python</button>
+    <button class="chip" onclick="loadExample('js')">JavaScript</button>
+    <button class="chip" onclick="loadExample('java')">Java</button>
+  </div>
+
+  <div class="editor-card">
+    <div class="toolbar">
+      <div style="display:flex; gap:16px; align-items:center;">
+        <select id="lang">
+          <option>Python</option>
+          <option>JavaScript</option>
+          <option>Java</option>
+          <option>Kotlin</option>
+          <option>C++</option>
+          <option>TypeScript</option>
+          <option>Other</option>
+        </select>
+        <select id="modelSelect" style="max-width:220px;">
+          <option value="nvidia/nemotron-3-super-120b-a12b:free">⭐ Nemotron 3 Super (Free)</option>
+          <option value="cognitivecomputations/dolphin-mistral-24b-venice-edition:free">⭐ Venice Uncensored (Free)</option>
+          <option value="anthropic/claude-sonnet-4">Claude Sonnet 4</option>
+          <option value="anthropic/claude-haiku-3.5">Claude Haiku 3.5</option>
+          <option value="google/gemini-2.5-flash">Gemini 2.5 Flash</option>
+          <option value="google/gemini-2.5-pro">Gemini 2.5 Pro</option>
+          <option value="meta-llama/llama-4-maverick">Llama 4 Maverick</option>
+          <option value="deepseek/deepseek-chat-v3">DeepSeek V3</option>
+          <option value="openai/gpt-4.1-mini">GPT-4.1 Mini</option>
+          <option value="openai/gpt-4.1">GPT-4.1</option>
+        </select>
+      </div>
+      <span class="char-count" id="charCount">0 chars</span>
+    </div>
+    <textarea id="codeInput" placeholder="// Paste your code here...&#10;// Don't worry, we've all written bad code." oninput="updateCount()"></textarea>
+  </div>
+
+  <button class="roast-btn" id="roastBtn" onclick="roastCode()">
+    🔥 Roast My Code
+  </button>
+
+  <div class="result-card" id="resultCard">
+    <div class="result-header">
+      <span>🧑‍💻 Senior Dev's Verdict</span>
+      <span class="score-badge" id="scoreBadge"></span>
+    </div>
+    <div id="resultBody"></div>
+    <div class="action-row" id="actionRow" style="display:none;">
+      <button class="action-btn" onclick="copyRoast()">📋 Copy roast</button>
+      <button class="action-btn" onclick="roastCode()">🔄 Roast again</button>
+    </div>
+  </div>
+</main>
+
+<footer>Built with Claude API &amp; zero chill</footer>
+
+<script src="script.js?v=2"></script>
+</body>
+</html>
