@@ -37,7 +37,6 @@
       overflow-x: hidden;
     }
 
-    /* Animated background orbs for depth */
     body::before, body::after {
       content: '';
       position: fixed;
@@ -80,13 +79,11 @@
       -webkit-text-fill-color: transparent;
       filter: drop-shadow(0 4px 8px var(--accent-glow));
       animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-      transform-style: preserve-3d;
-      transform: translateZ(20px);
     }
 
     @keyframes popIn {
-      0% { opacity: 0; transform: scale(0.8) translateZ(-50px) rotateX(20deg); }
-      100% { opacity: 1; transform: scale(1) translateZ(20px) rotateX(0deg); }
+      0% { opacity: 0; transform: scale(0.8); }
+      100% { opacity: 1; transform: scale(1); }
     }
 
     header p {
@@ -98,9 +95,7 @@
       opacity: 0;
     }
 
-    @keyframes fadeIn {
-      to { opacity: 1; }
-    }
+    @keyframes fadeIn { to { opacity: 1; } }
 
     main {
       flex: 1;
@@ -159,11 +154,6 @@
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-      transition: transform 0.3s, box-shadow 0.3s;
-      transform: translateZ(0);
-    }
-    .editor-card:hover {
-      box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 20px rgba(255, 77, 0, 0.1);
     }
 
     .toolbar {
@@ -245,7 +235,6 @@
       transition: transform 0.6s;
     }
     .roast-btn:hover::after { transform: rotate(45deg) translateY(100%); }
-    
     .roast-btn:hover { 
       transform: translateY(-2px); 
       box-shadow: 0 10px 0 #cc3d00, 0 20px 25px rgba(255, 77, 0, 0.5);
@@ -272,7 +261,6 @@
       backdrop-filter: blur(20px);
       box-shadow: 0 20px 40px rgba(0,0,0,0.6);
       animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-      transform-origin: top;
     }
     
     @keyframes slideUp {
@@ -296,7 +284,6 @@
       padding: 4px 12px;
       border-radius: 8px;
       font-weight: 800;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
     }
     .score-bad { background: rgba(239, 68, 68, 0.2); color: var(--red); box-shadow: 0 0 10px rgba(239, 68, 68, 0.3); }
     .score-mid { background: rgba(234, 179, 8, 0.2); color: var(--yellow); box-shadow: 0 0 10px rgba(234, 179, 8, 0.3); }
@@ -310,9 +297,6 @@
       white-space: pre-wrap;
       font-family: var(--sans);
     }
-    
-    /* Highlight special roast sections */
-    .result-body b, .result-body strong { color: var(--accent); }
 
     .loading-dots {
       display: flex;
@@ -373,14 +357,77 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      animation: slideDown 0.5s ease-out;
-    }
-    @keyframes slideDown {
-      from { transform: translateY(-20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
+      gap: 12px;
+      flex-wrap: wrap;
     }
     .api-notice a { color: var(--accent); font-weight: bold; text-decoration: none; }
     .api-notice a:hover { text-decoration: underline; }
+
+    /* ── API Key Modal ── */
+    .key-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .key-modal {
+      background: #111;
+      border: 1px solid rgba(255,77,0,0.4);
+      border-radius: 20px;
+      padding: 32px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 40px rgba(255,77,0,0.15);
+    }
+    .key-modal h2 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #ff4d00, #ffaa00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .key-modal p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    .key-modal p a { color: var(--accent); }
+    .key-input {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,77,0,0.4);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 13px;
+      outline: none;
+      margin-bottom: 8px;
+      transition: border-color 0.2s;
+    }
+    .key-input:focus { border-color: var(--accent); }
+    .key-error { font-size: 12px; color: var(--red); min-height: 18px; margin-bottom: 16px; }
+    .key-save-btn {
+      width: 100%;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, #ff4d00, #ff2a00);
+      color: white;
+      cursor: pointer;
+      font-family: var(--sans);
+      transition: opacity 0.2s;
+    }
+    .key-save-btn:hover { opacity: 0.85; }
 
     footer {
       text-align: center;
@@ -390,7 +437,6 @@
       font-weight: 500;
     }
 
-    /* Custom Scrollbar for Textarea */
     textarea::-webkit-scrollbar { width: 8px; }
     textarea::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 8px; }
     textarea::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 8px; }
@@ -399,6 +445,20 @@
 </head>
 <body>
 
+<!-- API Key Modal -->
+<div class="key-overlay" id="keyOverlay">
+  <div class="key-modal">
+    <h2>🔑 Enter your API Key</h2>
+    <p>
+      Get a free key at <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a> — it only takes a minute.<br>
+      Your key is saved only in your browser's local storage.
+    </p>
+    <input class="key-input" id="keyInput" type="password" placeholder="sk-or-v1-..." autocomplete="off" />
+    <div class="key-error" id="keyError"></div>
+    <button class="key-save-btn" id="keySaveBtn">Save &amp; Continue 🔥</button>
+  </div>
+</div>
+
 <header>
   <h1>🔥 CodeRoast</h1>
   <p>Paste your code. Brace yourself.</p>
@@ -406,8 +466,8 @@
 
 <main>
   <div class="api-notice" id="apiNotice">
-    ⚡ You'll be prompted for your OpenRouter API key when you roast. Get one free at <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a>
-    &nbsp; <button class="chip" onclick="localStorage.removeItem('coderoast_api_key'); OPENROUTER_API_KEY=''; alert('Key cleared! You\'ll be prompted again.')" style="font-size:11px;">Change Key</button>
+    <span>⚡ You'll be prompted for your OpenRouter API key when you roast. Get one free at <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a></span>
+    <button class="chip" id="changeKeyBtn" style="font-size:11px; white-space:nowrap;">Change Key</button>
   </div>
 
   <div class="examples">
@@ -419,7 +479,7 @@
 
   <div class="editor-card">
     <div class="toolbar">
-      <div style="display:flex; gap:16px; align-items:center;">
+      <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
         <select id="lang">
           <option>Python</option>
           <option>JavaScript</option>
@@ -458,14 +518,15 @@
     </div>
     <div id="resultBody"></div>
     <div class="action-row" id="actionRow" style="display:none;">
-      <button class="action-btn" onclick="copyRoast()">📋 Copy roast</button>
+      <!-- FIX: pass 'this' so copyRoast receives the button reference -->
+      <button class="action-btn" onclick="copyRoast(this)">📋 Copy roast</button>
       <button class="action-btn" onclick="roastCode()">🔄 Roast again</button>
     </div>
   </div>
 </main>
 
-<footer>Built with Claude API &amp; zero chill</footer>
+<footer>Built with OpenRouter API &amp; zero chill</footer>
 
-<script src="script.js?v=2"></script>
+<script src="script.js"></script>
 </body>
 </html>

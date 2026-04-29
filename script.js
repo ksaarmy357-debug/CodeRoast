@@ -1,4 +1,4 @@
-// API key is stored in localStorage for security — never hardcoded
+// API key is stored in localStorage — never hardcoded
 let OPENROUTER_API_KEY = localStorage.getItem("coderoast_api_key") || "";
 
 const examples = {
@@ -66,26 +66,55 @@ function getScoreClass(score) {
   return "score-bad";
 }
 
-// Prompt user for API key if not set
-function ensureApiKey() {
-  if (OPENROUTER_API_KEY) return true;
-  const key = prompt("Enter your OpenRouter API key:\n(Get one free at openrouter.ai/keys)");
-  if (key && key.trim()) {
-    OPENROUTER_API_KEY = key.trim();
-    localStorage.setItem("coderoast_api_key", OPENROUTER_API_KEY);
-    // Hide the API notice
-    const notice = document.querySelector(".api-notice");
-    if (notice) notice.style.display = "none";
-    return true;
-  }
-  return false;
-}
-
 // Escape HTML to prevent XSS
 function escapeHtml(text) {
   const div = document.createElement("div");
   div.textContent = text;
   return div.innerHTML;
+}
+
+// ── API Key Modal ──────────────────────────────────────────────────────────────
+function showKeyModal() {
+  return new Promise((resolve) => {
+    const overlay = document.getElementById("keyOverlay");
+    const input   = document.getElementById("keyInput");
+    const saveBtn = document.getElementById("keySaveBtn");
+    const errMsg  = document.getElementById("keyError");
+
+    errMsg.textContent = "";
+    input.value = "";
+    overlay.style.display = "flex";
+    setTimeout(() => input.focus(), 100);
+
+    function save() {
+      const val = input.value.trim();
+      if (!val) {
+        errMsg.textContent = "Please paste your API key above.";
+        return;
+      }
+      OPENROUTER_API_KEY = val;
+      localStorage.setItem("coderoast_api_key", val);
+      overlay.style.display = "none";
+      const notice = document.querySelector(".api-notice");
+      if (notice) notice.style.display = "none";
+      resolve(true);
+    }
+
+    saveBtn.onclick = save;
+    input.onkeydown = (e) => { if (e.key === "Enter") save(); };
+    // clicking outside cancels
+    overlay.onclick = (e) => {
+      if (e.target === overlay) {
+        overlay.style.display = "none";
+        resolve(false);
+      }
+    };
+  });
+}
+
+async function ensureApiKey() {
+  if (OPENROUTER_API_KEY) return true;
+  return await showKeyModal();
 }
 
 // Hide API notice if key already stored
@@ -94,8 +123,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const notice = document.querySelector(".api-notice");
     if (notice) notice.style.display = "none";
   }
+
+  // "Change Key" button opens modal
+  document.getElementById("changeKeyBtn").addEventListener("click", () => {
+    localStorage.removeItem("coderoast_api_key");
+    OPENROUTER_API_KEY = "";
+    showKeyModal();
+  });
 });
 
+// ── Main Roast Function ────────────────────────────────────────────────────────
 async function roastCode() {
   const code = document.getElementById("codeInput").value.trim();
   const lang = document.getElementById("lang").value;
@@ -105,24 +142,23 @@ async function roastCode() {
     return;
   }
 
-  if (!ensureApiKey()) {
-    return;
-  }
+  const hasKey = await ensureApiKey();
+  if (!hasKey) return;
 
-  const btn = document.getElementById("roastBtn");
-  btn.disabled = true;
-  btn.textContent = "🔥 Roasting...";
-
+  const btn        = document.getElementById("roastBtn");
   const resultCard = document.getElementById("resultCard");
   const resultBody = document.getElementById("resultBody");
-  const actionRow = document.getElementById("actionRow");
+  const actionRow  = document.getElementById("actionRow");
   const scoreBadge = document.getElementById("scoreBadge");
 
+  btn.disabled = true;
+  btn.innerHTML = "🔥 Roasting...";
+
   resultCard.style.display = "block";
-  actionRow.style.display = "none";
-  scoreBadge.textContent = "";
-  scoreBadge.className = "score-badge";
-  resultBody.innerHTML = '<div class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+  actionRow.style.display  = "none";
+  scoreBadge.textContent   = "";
+  scoreBadge.className     = "score-badge";
+  resultBody.innerHTML     = '<div class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
 
   try {
     const selectedModel = document.getElementById("modelSelect").value;
@@ -168,43 +204,46 @@ Keep it under 350 words. Plain text only, no markdown symbols.`
 
     const data = await response.json();
 
-    if (data.error) {
-      // If auth error, clear the stored key
-      if (data.error.code === 401 || data.error.message?.includes("auth")) {
+    if (!response.ok || data.error) {
+      const errMsg = data.error?.message || `HTTP ${response.status}`;
+      // Auth error → clear key so user can re-enter
+      if (response.status === 401 || errMsg.toLowerCase().includes("auth") || errMsg.toLowerCase().includes("key")) {
         localStorage.removeItem("coderoast_api_key");
         OPENROUTER_API_KEY = "";
         const notice = document.querySelector(".api-notice");
         if (notice) notice.style.display = "block";
+        throw new Error("Invalid API key. Please enter a valid OpenRouter key.");
       }
-      throw new Error(data.error.message || "API request failed");
+      throw new Error(errMsg);
     }
 
-    const text = data.choices?.[0]?.message?.content || "Something went wrong. Even our roaster gave up.";
+    const text = data.choices?.[0]?.message?.content;
+    if (!text) throw new Error("The model returned an empty response. Try a different model.");
 
     const score = extractScore(text);
     if (score) {
       scoreBadge.textContent = score;
-      scoreBadge.className = "score-badge " + getScoreClass(score);
+      scoreBadge.className   = "score-badge " + getScoreClass(score);
     }
 
-    // Use escapeHtml to prevent XSS from API output
     resultBody.innerHTML = `<div class="result-body">${escapeHtml(text)}</div>`;
     actionRow.style.display = "flex";
 
   } catch (err) {
-    resultBody.innerHTML = `<div class="result-body" style="color:#ef4444;">Error: ${escapeHtml(err.message)}</div>`;
+    resultBody.innerHTML = `<div class="result-body" style="color:#ef4444;">❌ ${escapeHtml(err.message)}</div>`;
   }
 
-  btn.disabled = false;
-  btn.textContent = "🔥 Roast My Code";
+  btn.disabled    = false;
+  btn.innerHTML   = "🔥 Roast My Code";
 }
 
-function copyRoast() {
+// FIX: pass event explicitly so it works in strict mode
+function copyRoast(btn) {
   const text = document.querySelector(".result-body")?.textContent;
   if (text) {
-    navigator.clipboard.writeText(text);
-    const btn = event.target;
-    btn.textContent = "✅ Copied!";
-    setTimeout(() => btn.textContent = "📋 Copy roast", 1500);
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = "✅ Copied!";
+      setTimeout(() => btn.textContent = "📋 Copy roast", 1500);
+    });
   }
 }
